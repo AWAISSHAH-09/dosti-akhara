@@ -1,769 +1,531 @@
 <!DOCTYPE html>
-<html lang="ur" dir="rtl">
+<html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <title>دوستی اکھاڑہ - 12 Tehni Game</title>
-  <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#d4af37">
-  
-  <!-- Firebase SDKs -->
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tania Trading - Futuristic Portal</title>
+    <!-- FontAwesome & Google Fonts -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800&family=Plus+Jakarta+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-gradient: linear-gradient(135deg, #0b132b 0%, #1c2541 50%, #0b132b 100%);
+            --card-bg: rgba(255, 255, 255, 0.05);
+            --card-border: rgba(0, 255, 204, 0.15);
+            --primary-teal: #00ffcc;
+            --accent-blue: #00b4d8;
+            --accent-purple: #7209b7;
+            --text-main: #ffffff;
+            --text-sub: #a0aec0;
+            --glow-shadow: 0 0 20px rgba(0, 255, 204, 0.2);
+        }
 
-  <style>
-    /* Hide Netlify Badge Forcefully */
-    [data-netlify-deploy-id], .netlify-badge, #netlify-badge { display: none !important; opacity: 0 !important; visibility: hidden !important; }
-    
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; }
-    body { background: #1a150e; color: #f0e6d2; display: flex; flex-direction: column; align-items: center; min-height: 100vh; padding: 15px; }
-    .card { background: #2a2218; border: 2px solid #d4af37; border-radius: 12px; width: 100%; max-width: 420px; padding: 15px; box-shadow: 0 8px 20px rgba(0,0,0,0.6); margin-bottom: 15px; }
-    h2, h3 { text-align: center; color: #f3e5ab; margin-bottom: 10px; }
-    
-    .online-badge { background: #15100a; border: 1px solid #28a745; color: #28a745; text-align: center; border-radius: 20px; padding: 4px 12px; font-size: 12px; font-weight: bold; margin-bottom: 10px; display: inline-block; }
-    .notice-board { background: #231b10; border: 1px dashed #ffd700; border-radius: 8px; padding: 10px; margin-bottom: 12px; text-align: center; font-size: 13px; color: #ffe899; }
-    .notice-board span { font-weight: bold; color: #ffd700; display: block; margin-bottom: 4px; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
 
-    .wallet-box { background: #15100a; border: 1px solid #8b6b23; border-radius: 8px; padding: 12px; text-align: center; margin-bottom: 15px; }
-    .balance { font-size: 26px; font-weight: bold; color: #ffd700; margin: 5px 0; }
-    .btn-group { display: flex; gap: 10px; margin-top: 10px; }
-    button { flex: 1; padding: 10px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; transition: 0.2s; font-size: 14px; }
-    .btn-gold { background: #d4af37; color: #1a150e; }
-    .btn-gold:hover { background: #ffd700; }
-    .btn-outline { background: transparent; border: 1px solid #d4af37; color: #d4af37; }
-    
-    .versus-box { background: #15100a; border: 1px solid #ffd700; padding: 8px; border-radius: 8px; text-align: center; margin-bottom: 10px; font-size: 13px; font-weight: bold; color: #ffd700; }
-    
-    .board-container { width: 100%; aspect-ratio: 1; position: relative; background: #c2a675; border: 4px solid #5c4018; border-radius: 8px; margin-top: 10px; }
-    .board-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); border-radius: 6px; z-index: 10; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #ffd700; text-align: center; font-weight: bold; padding: 15px; }
-    
-    svg.lines { width: 100%; height: 100%; position: absolute; top: 0; left: 0; }
-    line { stroke: #3a250d; stroke-width: 3; }
-    .nodes { width: 100%; height: 100%; position: absolute; top: 0; left: 0; display: grid; grid-template-columns: repeat(5, 1fr); grid-template-rows: repeat(5, 1fr); }
-    .node-spot { display: flex; align-items: center; justify-content: center; position: relative; }
-    .piece { width: 70%; height: 70%; border-radius: 50%; cursor: pointer; z-index: 2; transition: transform 0.15s, box-shadow 0.15s; }
-    .piece.red { background: radial-gradient(circle at 30% 30%, #ff6b6b, #b30000); box-shadow: 0 3px 6px rgba(0,0,0,0.5); }
-    .piece.blue { background: radial-gradient(circle at 30% 30%, #4da6ff, #0052cc); box-shadow: 0 3px 6px rgba(0,0,0,0.5); }
-    .piece.selected { transform: scale(1.18); box-shadow: 0 0 12px #ffd700, 0 0 4px #fff; border: 2px solid #fff; }
-    .highlight { width: 40%; height: 40%; background: rgba(255, 215, 0, 0.7); border-radius: 50%; z-index: 2; cursor: pointer; animation: pulse 1s infinite alternate; }
-    @keyframes pulse { from { transform: scale(0.8); opacity: 0.6; } to { transform: scale(1.2); opacity: 1; } }
-    .hidden { display: none !important; }
-    input, textarea { width: 100%; padding: 10px; margin: 8px 0; background: #15100a; border: 1px solid #8b6b23; border-radius: 6px; color: #fff; text-align: center; }
-    textarea { text-align: right; resize: vertical; min-height: 60px; }
-    .req-item { background: #15100a; border: 1px solid #5c4018; padding: 10px; border-radius: 6px; margin-top: 8px; font-size: 13px; text-align: right; }
-    
-    .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: flex; align-items: center; justify-content: center; z-index: 999; }
-    .custom-alert { background: #2a2218; border: 2px solid #ffd700; border-radius: 12px; width: 85%; max-width: 320px; padding: 20px; text-align: center; box-shadow: 0 0 20px rgba(212,175,55,0.4); }
-    .tax-note { background: #3b1818; border: 1px solid #ff4d4d; color: #ff9999; border-radius: 6px; padding: 8px; font-size: 12px; margin-bottom: 8px; text-align: center; }
-  </style>
+        body {
+            background: var(--bg-gradient);
+            color: var(--text-main);
+            min-height: 100vh;
+            padding-bottom: 90px;
+            overflow-x: hidden;
+        }
+
+        /* --- Header --- */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 20px;
+            background: rgba(11, 19, 43, 0.8);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--card-border);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .brand-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--primary-teal), var(--accent-blue));
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #0b132b;
+            font-size: 1.2rem;
+            box-shadow: var(--glow-shadow);
+        }
+
+        .brand-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.1rem;
+            font-weight: 800;
+            letter-spacing: 1px;
+            color: #fff;
+        }
+
+        .brand-subtitle {
+            font-size: 0.65rem;
+            color: var(--primary-teal);
+            letter-spacing: 2px;
+        }
+
+        .audio-control {
+            background: rgba(0, 255, 204, 0.1);
+            border: 1px solid var(--primary-teal);
+            color: var(--primary-teal);
+            padding: 8px 14px;
+            border-radius: 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.8rem;
+            transition: all 0.3s ease;
+        }
+
+        .audio-control:hover {
+            background: var(--primary-teal);
+            color: #0b132b;
+            box-shadow: var(--glow-shadow);
+        }
+
+        /* --- Main Container --- */
+        .container {
+            padding: 20px;
+            max-width: 600px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        /* --- Glass Card Style --- */
+        .glass-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(16px);
+            border: 1px solid var(--card-border);
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* --- Futuristic Notice Board --- */
+        .notice-board {
+            background: linear-gradient(135deg, rgba(114, 9, 183, 0.2), rgba(0, 180, 216, 0.1));
+            border: 1px solid rgba(114, 9, 183, 0.4);
+            position: relative;
+        }
+
+        .notice-board::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--primary-teal), transparent);
+            animation: scanline 3s infinite linear;
+        }
+
+        @keyframes scanline {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+
+        .notice-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+        }
+
+        .notice-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.9rem;
+            color: var(--primary-teal);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .live-badge {
+            background: #ff0055;
+            color: white;
+            font-size: 0.6rem;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-weight: 700;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.4; }
+            100% { opacity: 1; }
+        }
+
+        .notice-ticker {
+            font-size: 0.85rem;
+            color: var(--text-sub);
+            line-height: 1.5;
+        }
+
+        /* --- Profile Section --- */
+        .profile-card {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .avatar-container {
+            position: relative;
+        }
+
+        .avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 16px;
+            background: #1c2541;
+            border: 2px solid var(--primary-teal);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: var(--primary-teal);
+        }
+
+        .user-info h3 {
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .user-info h3 i {
+            color: var(--accent-blue);
+            font-size: 0.9rem;
+        }
+
+        .user-info p {
+            font-size: 0.75rem;
+            color: var(--text-sub);
+            margin-top: 4px;
+        }
+
+        /* --- Wallet Section --- */
+        .wallet-card {
+            background: linear-gradient(135deg, rgba(0, 255, 204, 0.1), rgba(0, 180, 216, 0.05));
+        }
+
+        .wallet-label {
+            font-size: 0.75rem;
+            color: var(--text-sub);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .balance {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 2rem;
+            font-weight: 800;
+            color: #fff;
+            margin: 8px 0;
+        }
+
+        .balance span {
+            color: var(--primary-teal);
+            font-size: 1.2rem;
+        }
+
+        /* --- Grid Metrics --- */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .metric-card {
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .metric-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+        }
+
+        .metric-card.invest .metric-icon { background: rgba(0, 180, 216, 0.2); color: var(--accent-blue); }
+        .metric-card.withdraw .metric-icon { background: rgba(0, 255, 204, 0.2); color: var(--primary-teal); }
+
+        .metric-title { font-size: 0.7rem; color: var(--text-sub); }
+        .metric-value { font-family: 'Orbitron', sans-serif; font-size: 1.1rem; font-weight: 600; }
+
+        /* --- Services Grid --- */
+        .services-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+        }
+
+        .service-btn {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 16px;
+            padding: 16px 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            color: #fff;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .service-btn:hover {
+            transform: translateY(-3px);
+            border-color: var(--primary-teal);
+            box-shadow: var(--glow-shadow);
+        }
+
+        .service-btn i {
+            font-size: 1.4rem;
+            color: var(--primary-teal);
+        }
+
+        .service-btn span {
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+
+        /* --- Bottom Navigation --- */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: rgba(11, 19, 43, 0.95);
+            backdrop-filter: blur(20px);
+            border-top: 1px solid var(--card-border);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding: 12px 0;
+            z-index: 1000;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            color: var(--text-sub);
+            text-decoration: none;
+            font-size: 0.65rem;
+            transition: 0.3s;
+        }
+
+        .nav-item i { font-size: 1.2rem; }
+
+        .nav-item.active, .nav-item:hover {
+            color: var(--primary-teal);
+        }
+
+        .nav-item.trade-btn {
+            background: linear-gradient(135deg, var(--primary-teal), var(--accent-blue));
+            color: #0b132b;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            justify-content: center;
+            margin-top: -25px;
+            box-shadow: var(--glow-shadow);
+            font-size: 1.4rem;
+        }
+    </style>
 </head>
 <body>
 
-  <!-- Custom Alert Modal -->
-  <div id="custom-alert-box" class="modal-overlay hidden">
-    <div class="custom-alert">
-      <h3 style="color:#ffd700; margin-bottom:8px;">دوستی اکھاڑہ 🎮</h3>
-      <p id="alert-msg-text" style="font-size:14px; margin-bottom:15px; color:#f0e6d2;"></p>
-      <button class="btn-gold" style="width:100%;" onclick="closeCustomAlert()">ٹھیک ہے</button>
-    </div>
-  </div>
-
-  <!-- Auth Screen -->
-  <div id="auth-screen" class="card">
-    <h2>دوستی اکھاڑہ 🎮</h2>
-    <p style="text-align:center; font-size: 13px; margin-bottom: 12px; color:#aaa;">12-ٹہنی آن لائن گیم میں خوش آمدید</p>
-    <input type="text" id="username" placeholder="موبائل نمبر / ایڈمن">
-    <input type="password" id="password" placeholder="پاسورڈ">
-    <button class="btn-gold" style="width:100%; margin-top:10px;" onclick="login()">لاگ ان / سائن اپ</button>
-  </div>
-
-  <!-- Main Dashboard -->
-  <div id="app-screen" class="card hidden">
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 10px;">
-      <span id="user-display" style="font-weight:bold; color:#ffd700;"></span>
-      <button class="btn-outline" style="flex:none; padding:4px 12px;" onclick="logout()">لاگ آؤٹ</button>
-    </div>
-
-    <!-- Live Announcement Board -->
-    <div class="notice-board">
-      <span>📢 اہم نوٹس / ایناونسمنٹ</span>
-      <div id="announcement-text">دوستی اکھاڑہ میں خوش آمدید!</div>
-    </div>
-
-    <!-- Online Users Count Bar -->
-    <div style="text-align:center;">
-      <div class="online-badge">🟢 آن لائن کھلاڑی: <span id="online-count">1</span></div>
-    </div>
-
-    <div class="wallet-box">
-      <div style="font-size:13px; color:#ccc;">موجودہ والٹ بیلنس</div>
-      <div class="balance" id="balance-display">Rs 0</div>
-      <div class="btn-group">
-        <button class="btn-gold" onclick="showModal('deposit')">+ ڈیپازٹ</button>
-        <button class="btn-outline" onclick="showModal('withdraw')">- ودڈرا</button>
-      </div>
-    </div>
-
-    <!-- Match Versus Status -->
-    <div id="versus-container" class="versus-box hidden">
-      <span id="player-red-title" style="color:#ff6b6b;">پلیئر 1</span> 
-      <span style="color:#fff; margin:0 5px;">VS</span> 
-      <span id="player-blue-title" style="color:#4da6ff;">پلیئر 2</span>
-    </div>
-
-    <div style="text-align:center; font-weight:bold; margin-bottom:6px; font-size:13px; color:#ffd700;" id="game-status">گیم شروع کرنے کے لیے بٹن دبائیں</div>
-
-    <!-- Board -->
-    <div class="board-container">
-      <div id="lock-overlay" class="board-overlay">
-        <p style="font-size:16px; margin-bottom:6px;" id="lock-text">🔒 گیم لاک ہے</p>
-        <p style="font-size:12px; color:#ddd; font-weight:normal;" id="lock-subtext">نیچے "نئی گیم شروع کریں (Rs 50)" پر کلک کریں</p>
-      </div>
-      <svg class="lines" viewBox="0 0 100 100">
-        <line x1="0" y1="0" x2="100" y2="0"/><line x1="0" y1="25" x2="100" y2="25"/><line x1="0" y1="50" x2="100" y2="50"/><line x1="0" y1="75" x2="100" y2="75"/><line x1="0" y1="100" x2="100" y2="100"/>
-        <line x1="0" y1="0" x2="0" y2="100"/><line x1="25" y1="0" x2="25" y2="100"/><line x1="50" y1="0" x2="50" y2="100"/><line x1="75" y1="0" x2="75" y2="100"/><line x1="100" y1="0" x2="100" y2="100"/>
-        <line x1="0" y1="0" x2="100" y2="100"/><line x1="100" y1="0" x2="0" y2="100"/>
-        <line x1="0" y1="50" x2="50" y2="0"/><line x1="50" y1="0" x2="100" y2="50"/><line x1="100" y1="50" x2="50" y2="100"/><line x1="50" y1="100" x2="0" y2="50"/>
-      </svg>
-      <div class="nodes" id="board-nodes"></div>
-    </div>
-
-    <button id="start-btn" class="btn-gold" style="width:100%; margin-top:12px;" onclick="searchOrStartMatch()">نئی گیم شروع کریں (Rs 50)</button>
-  </div>
-
-  <!-- Admin Panel -->
-  <div id="admin-panel" class="card hidden">
-    <h3>ایڈمن کنٹرول پینل ⚙️</h3>
-    
-    <div style="background:#15100a; border:1px solid #8b6b23; border-radius:8px; padding:10px; margin-bottom:12px;">
-      <h4 style="color:#ffd700; font-size:13px; text-align:center; margin-bottom:6px;">نوٹس بورڈ تبدیل کریں (اعلان)</h4>
-      <textarea id="admin-notice-input" placeholder="یہاں نیا نوٹس یا پیغام لکھیں..."></textarea>
-      <button class="btn-gold" style="width:100%; margin-top:4px;" onclick="updateAnnouncement()">نوٹس اپڈیٹ کریں</button>
-    </div>
-
-    <h3>آن لائن درخواستیں</h3>
-    <div id="requests-list">کوئی زیر التواء درخواست نہیں ہے</div>
-  </div>
-
-  <!-- Transaction Modal -->
-  <div id="trans-modal" class="card hidden" style="position:fixed; top:12%; z-index:100; border-color:#ffd700;">
-    <h3 id="modal-title">ڈیپازٹ ریکویسٹ</h3>
-    
-    <div id="payment-info-box" style="font-size:12px; color:#ffd700; text-align:center; margin-bottom:8px; background:#15100a; padding:8px; border-radius:6px; border:1px solid #5c4018;">
-      <b>Easypaisa & JazzCash:</b><br>
-      شمارہ: <b>03246533908</b><br>
-      نام: <b>Syed AWAIS SHOUKAT</b>
-    </div>
-
-    <div id="withdraw-tax-box" class="tax-note hidden">
-      ⚠️ <b>نوٹس:</b> 20% گیم چارجز کٹیں گے۔<br>
-      مثال: 100 روپے میں سے <b>80 روپے</b> بھیجے جائیں گے اور 20 روپے چارجز ہوں گے۔
-    </div>
-
-    <input type="number" id="trans-amount" placeholder="رقم (مثلاً 100)">
-    <input type="text" id="trans-acc" placeholder="موبائل نمبر اور TID (ٹرانزیکشن آئی ڈی)">
-    <div class="btn-group">
-      <button class="btn-gold" onclick="submitTransaction()">درخواست بھیجیں</button>
-      <button class="btn-outline" onclick="closeModal()">منسوخ</button>
-    </div>
-  </div>
-
-  <script>
-    const firebaseConfig = {
-      apiKey: "AIzaSyATjQZ0yY3UxpH1G101Re-R03jihaH62zo",
-      authDomain: "dosti-akhada.firebaseapp.com",
-      databaseURL: "https://dosti-akhada-default-rtdb.firebaseio.com",
-      projectId: "dosti-akhada",
-      storageBucket: "dosti-akhada.appspot.com",
-      messagingSenderId: "212925127313",
-      appId: "1:212925127313:web:c125cf1cc605f58765d30"
-    };
-
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
-
-    let currentUser = null;
-    let boardState = Array(25).fill(null);
-    let selectedIndex = null;
-    let validMoves = [];
-    let currentMode = 'deposit';
-    let isGameActive = false;
-    let matchId = null;
-    let myColor = 'red';
-    let isBotMatch = false;
-    let matchSearchTimer = null;
-
-    const adj = [
-      [1,5,6], [0,2,6], [1,3,6,7,8], [2,4,8], [3,8,9],
-      [0,6,10], [0,1,2,5,7,10,11,12], [2,6,8,12], [2,3,4,7,9,12,13,14], [4,8,14],
-      [5,6,11,15,16], [6,10,12,16], [6,7,8,11,13,16,17,18], [8,12,14,18], [8,9,13,18,19],
-      [10,16,20], [10,11,12,15,17,20,21,22], [12,16,18,22], [12,13,14,17,19,22,23,24], [14,18,24],
-      [15,16,21], [16,20,22], [16,17,18,21,23], [18,22,24], [18,19,23]
-    ];
-
-    function notify(msg) {
-      document.getElementById('alert-msg-text').innerText = msg;
-      document.getElementById('custom-alert-box').classList.remove('hidden');
-    }
-
-    function closeCustomAlert() {
-      document.getElementById('custom-alert-box').classList.add('hidden');
-    }
-
-    function cleanUserKey(user) {
-      return user.replace(/[.#$\[\]]/g, "_");
-    }
-
-    function getJump(from, over) {
-      const r1 = Math.floor(from / 5), c1 = from % 5;
-      const r2 = Math.floor(over / 5), c2 = over % 5;
-      const r3 = r2 + (r2 - r1), c3 = c2 + (c2 - c1);
-      if (r3 >= 0 && r3 < 5 && c3 >= 0 && c3 < 5) {
-        const landing = r3 * 5 + c3;
-        if (adj[over].includes(landing)) return landing;
-      }
-      return null;
-    }
-
-    function initDefaultBoard() {
-      boardState = Array(25).fill(null);
-      for(let i=0; i<12; i++) boardState[i] = 'blue';
-      for(let i=13; i<25; i++) boardState[i] = 'red';
-      selectedIndex = null;
-      validMoves = [];
-      renderBoard();
-    }
-
-    function renderBoard() {
-      const nodesDiv = document.getElementById('board-nodes');
-      nodesDiv.innerHTML = '';
-      for (let i = 0; i < 25; i++) {
-        const spot = document.createElement('div');
-        spot.className = 'node-spot';
-
-        if (boardState[i]) {
-          const p = document.createElement('div');
-          p.className = `piece ${boardState[i]} ${selectedIndex === i ? 'selected' : ''}`;
-          p.onclick = () => handlePieceClick(i);
-          spot.appendChild(p);
-        } else if (validMoves.some(m => m.to === i)) {
-          const hl = document.createElement('div');
-          hl.className = 'highlight';
-          hl.onclick = () => handleMoveClick(i);
-          spot.appendChild(hl);
-        }
-        nodesDiv.appendChild(spot);
-      }
-    }
-
-    function getPossibleMoves(index, color, state = boardState) {
-      let moves = [];
-      if (state[index] !== color) return moves;
-
-      adj[index].forEach(nbr => {
-        if (!state[nbr]) {
-          moves.push({ to: nbr, type: 'step' });
-        } else if (state[nbr] !== color) {
-          let landing = getJump(index, nbr);
-          if (landing !== null && !state[landing]) {
-            moves.push({ to: landing, over: nbr, type: 'jump' });
-          }
-        }
-      });
-      return moves;
-    }
-
-    function handlePieceClick(i) {
-      if (!isGameActive) return notify('پہلے گیم میں شامل ہوں!');
-      if (boardState[i] !== myColor) return;
-      
-      if (matchId && !isBotMatch) {
-        db.ref('matches/' + matchId + '/turn').once('value', snap => {
-          if (snap.val() !== myColor) {
-            notify('ابھی دوسرے کھلاڑی کی باری ہے!');
-            return;
-          }
-          const moves = getPossibleMoves(i, myColor);
-          selectedIndex = i;
-          validMoves = moves;
-          renderBoard();
-        });
-      } else {
-        const moves = getPossibleMoves(i, myColor);
-        selectedIndex = i;
-        validMoves = moves;
-        renderBoard();
-      }
-    }
-
-    function handleMoveClick(toIndex) {
-      if (!isGameActive) return;
-      const move = validMoves.find(m => m.to === toIndex);
-      if (!move || selectedIndex === null) return;
-
-      boardState[toIndex] = myColor;
-      boardState[selectedIndex] = null;
-      if (move.type === 'jump') boardState[move.over] = null;
-
-      selectedIndex = null;
-      validMoves = [];
-      renderBoard();
-
-      if (isBotMatch) {
-        if (checkWin()) return;
-        document.getElementById('game-status').innerText = 'بوٹ سوچ رہا ہے...';
-        setTimeout(expertBotTurn, 500);
-      } else if (matchId) {
-        const nextTurn = myColor === 'red' ? 'blue' : 'red';
-        db.ref('matches/' + matchId).update({
-          board: boardState,
-          turn: nextTurn
-        });
-        checkWinMultiplayer();
-      }
-    }
-
-    function expertBotTurn() {
-      let allMoves = [];
-      for (let i = 0; i < 25; i++) {
-        if (boardState[i] === 'blue') {
-          let mList = getPossibleMoves(i, 'blue');
-          mList.forEach(m => allMoves.push({ from: i, ...m }));
-        }
-      }
-
-      if (allMoves.length === 0) {
-        notify('مبارک ہو! آپ جیت گئے! 🎉 (Rs 100 آپ کے والٹ میں آ گئے)');
-        addBalance(100);
-        endGame();
-        return;
-      }
-
-      let jumps = allMoves.filter(m => m.type === 'jump');
-      let chosenMove = null;
-
-      if (jumps.length > 0) {
-        chosenMove = jumps[0];
-      } else {
-        let safeMoves = allMoves.filter(m => {
-          let tempState = [...boardState];
-          tempState[m.to] = 'blue';
-          tempState[m.from] = null;
-
-          for (let r = 0; r < 25; r++) {
-            if (tempState[r] === 'red') {
-              let rMoves = getPossibleMoves(r, 'red', tempState);
-              if (rMoves.some(rm => rm.type === 'jump')) return false;
-            }
-          }
-          return true;
-        });
-
-        if (safeMoves.length > 0) {
-          safeMoves.sort((a, b) => Math.abs(a.to - 12) - Math.abs(b.to - 12));
-          chosenMove = safeMoves[0];
-        } else {
-          chosenMove = allMoves[Math.floor(Math.random() * allMoves.length)];
-        }
-      }
-
-      boardState[chosenMove.to] = 'blue';
-      boardState[chosenMove.from] = null;
-      if (chosenMove.type === 'jump') boardState[chosenMove.over] = null;
-
-      renderBoard();
-      checkWin();
-      if(isGameActive) document.getElementById('game-status').innerText = 'آپ کی باری (لال گوٹیاں)';
-    }
-
-    function checkWin() {
-      let reds = boardState.filter(s => s === 'red').length;
-      let blues = boardState.filter(s => s === 'blue').length;
-
-      if (blues === 0) {
-        notify('مبارک ہو! آپ جیت گئے! 🏆 (Rs 100 جیت لیے)');
-        addBalance(100);
-        endGame();
-        return true;
-      }
-      if (reds === 0) {
-        notify('افسوس! بوٹ جیت گیا۔ دوبارہ کوشش کریں!');
-        endGame();
-        return true;
-      }
-      return false;
-    }
-
-    function checkWinMultiplayer() {
-      let reds = boardState.filter(s => s === 'red').length;
-      let blues = boardState.filter(s => s === 'blue').length;
-
-      if (blues === 0 || reds === 0) {
-        const winnerColor = blues === 0 ? 'red' : 'blue';
-        db.ref('matches/' + matchId).update({ winner: winnerColor, status: 'finished' });
-      }
-    }
-
-    function endGame() {
-      isGameActive = false;
-      document.getElementById('lock-overlay').classList.remove('hidden');
-      document.getElementById('lock-text').innerText = '🔒 گیم ختم ہو گئی';
-      document.getElementById('lock-subtext').innerText = 'نئی گیم شروع کرنے کے لیے بٹن کلک کریں';
-      document.getElementById('game-status').innerText = 'گیم ختم ہو گئی۔';
-      document.getElementById('versus-container').classList.add('hidden');
-      document.getElementById('start-btn').disabled = false;
-    }
-
-    function searchOrStartMatch() {
-      const userKey = cleanUserKey(currentUser);
-      
-      db.ref('users/' + userKey + '/balance').once('value', (snapshot) => {
-        let bal = snapshot.val() || 0;
-        if (bal < 50) {
-          notify('آپ کے پاس بیلنس کم ہے! کم از کم Rs 50 ہونا لازمی ہے۔');
-          return;
-        }
-
-        document.getElementById('start-btn').disabled = true;
-        document.getElementById('lock-overlay').classList.remove('hidden');
-        document.getElementById('lock-text').innerText = '🔍 آن لائن کھلاڑی کا انتظار...';
-        document.getElementById('lock-subtext').innerText = 'اگر 5 سیکنڈ میں آن لائن کھلاڑی نہ ملا تو بوٹ سے گیم شروع ہوگی';
-
-        db.ref('lobby').once('value', (snap) => {
-          const lobbyData = snap.val();
-          
-          if (lobbyData && lobbyData.waitingUser && lobbyData.waitingUser !== currentUser) {
-            const opponent = lobbyData.waitingUser;
-            db.ref('lobby').remove();
-
-            matchId = 'match_' + Date.now();
-            myColor = 'blue';
-            isBotMatch = false;
-
-            addBalance(-50);
-
-            let initialBoard = Array(25).fill(null);
-            for(let i=0; i<12; i++) initialBoard[i] = 'blue';
-            for(let i=13; i<25; i++) initialBoard[i] = 'red';
-
-            db.ref('matches/' + matchId).set({
-              playerRed: opponent,
-              playerBlue: currentUser,
-              board: initialBoard,
-              turn: 'red',
-              status: 'active'
-            });
-
-            startMultiplayerMatch(matchId, opponent, currentUser);
-
-          } else {
-            db.ref('lobby').set({ waitingUser: currentUser });
-
-            matchSearchTimer = setTimeout(() => {
-              db.ref('lobby').once('value', (checkSnap) => {
-                if (checkSnap.val() && checkSnap.val().waitingUser === currentUser) {
-                  db.ref('lobby').remove();
-                  startBotMatch();
-                }
-              });
-            }, 5000);
-
-            db.ref('matches').on('child_added', (matchSnap) => {
-              const match = matchSnap.val();
-              if (match && match.playerRed === currentUser && match.status === 'active') {
-                clearTimeout(matchSearchTimer);
-                matchId = matchSnap.key;
-                myColor = 'red';
-                isBotMatch = false;
-                addBalance(-50);
-                startMultiplayerMatch(matchId, currentUser, match.playerBlue);
-              }
-            });
-          }
-        });
-      });
-    }
-
-    function startBotMatch() {
-      isBotMatch = true;
-      myColor = 'red';
-      addBalance(-50);
-      
-      isGameActive = true;
-      document.getElementById('lock-overlay').classList.add('hidden');
-      document.getElementById('versus-container').classList.remove('hidden');
-      document.getElementById('player-red-title').innerText = `${currentUser} (آپ)`;
-      document.getElementById('player-blue-title').innerText = `ایکسپرٹ بوٹ 🤖`;
-      document.getElementById('game-status').innerText = 'آپ کی باری (لال گوٹیاں)';
-      
-      initDefaultBoard();
-    }
-
-    function startMultiplayerMatch(mId, redUser, blueUser) {
-      isGameActive = true;
-      document.getElementById('lock-overlay').classList.add('hidden');
-      document.getElementById('versus-container').classList.remove('hidden');
-      document.getElementById('player-red-title').innerText = `${redUser} (🔴)`;
-      document.getElementById('player-blue-title').innerText = `${blueUser} (🔵)`;
-
-      db.ref('matches/' + mId).on('value', (snap) => {
-        const match = snap.val();
-        if (!match) return;
-
-        boardState = match.board;
-        renderBoard();
-
-        if (match.status === 'finished') {
-          db.ref('matches/' + mId).off();
-          if (match.winner === myColor) {
-            notify('مبارک ہو! آپ آن لائن میچ جیت گئے! 🎉 (Rs 100 موصول ہو گئے)');
-            addBalance(100);
-          } else {
-            notify('افسوس! دوسرا کھلاڑی میچ جیت گیا۔');
-          }
-          endGame();
-          return;
-        }
-
-        if (match.turn === myColor) {
-          document.getElementById('game-status').innerText = 'آپ کی باری ہے! ⚡';
-        } else {
-          document.getElementById('game-status').innerText = 'دوسرے کھلاڑی کی باری ہے... ⏳';
-        }
-      });
-    }
-
-    function trackOnlinePresence(userKey) {
-      const userPresenceRef = db.ref('online_users/' + userKey);
-      const connectedRef = db.ref('.info/connected');
-
-      connectedRef.on('value', (snap) => {
-        if (snap.val() === true) {
-          userPresenceRef.onDisconnect().remove();
-          userPresenceRef.set(true);
-        }
-      });
-
-      db.ref('online_users').on('value', (snapshot) => {
-        const count = snapshot.numChildren() || 0;
-        document.getElementById('online-count').innerText = count;
-      });
-    }
-
-    window.addEventListener('DOMContentLoaded', () => {
-      const savedUser = localStorage.getItem('dosti_game_user');
-      if (savedUser) {
-        executeLogin(savedUser);
-      }
-    });
-
-    function login() {
-      const u = document.getElementById('username').value.trim();
-      const p = document.getElementById('password').value.trim();
-      if (!u || !p) return notify('برائے مہربانی نام اور پاسورڈ درج کریں');
-
-      localStorage.setItem('dosti_game_user', u);
-      executeLogin(u);
-    }
-
-    function executeLogin(u) {
-      currentUser = u;
-      const userKey = cleanUserKey(currentUser);
-
-      document.getElementById('auth-screen').classList.add('hidden');
-      document.getElementById('app-screen').classList.remove('hidden');
-      document.getElementById('user-display').innerText = `خوش آمدید، ${u}`;
-
-      if (u === 'admin') {
-        document.getElementById('admin-panel').classList.remove('hidden');
-        listenToAdminRequests();
-      }
-
-      trackOnlinePresence(userKey);
-
-      db.ref('users/' + userKey).once('value', (snapshot) => {
-        if (!snapshot.exists()) {
-          db.ref('users/' + userKey).set({ balance: 50 });
-        }
-      });
-
-      db.ref('users/' + userKey + '/balance').on('value', (snapshot) => {
-        const val = snapshot.val();
-        document.getElementById('balance-display').innerText = `Rs ${val !== null ? val : 0}`;
-      });
-
-      db.ref('announcement').on('value', (snapshot) => {
-        const text = snapshot.val();
-        if (text) {
-          document.getElementById('announcement-text').innerText = text;
-        }
-      });
-
-      initDefaultBoard();
-    }
-
-    function logout() {
-      localStorage.removeItem('dosti_game_user');
-      location.reload();
-    }
-
-    function addBalance(amt) {
-      const userKey = cleanUserKey(currentUser);
-      db.ref('users/' + userKey + '/balance').transaction((current) => {
-        return (current || 0) + amt;
-      });
-    }
-
-    function showModal(type) {
-      currentMode = type;
-      const title = type === 'deposit' ? 'ڈیپازٹ ریکویسٹ' : 'ودڈرا ریکویسٹ';
-      document.getElementById('modal-title').innerText = title;
-
-      const infoBox = document.getElementById('payment-info-box');
-      const taxBox = document.getElementById('withdraw-tax-box');
-
-      if (type === 'deposit') {
-        infoBox.style.display = 'block';
-        taxBox.classList.add('hidden');
-        document.getElementById('trans-acc').placeholder = "موبائل نمبر اور TID (ٹرانزیکشن آئی ڈی)";
-      } else {
-        infoBox.style.display = 'none';
-        taxBox.classList.remove('hidden');
-        document.getElementById('trans-acc').placeholder = "جس نمبر پر پیسے چاہیے (Easypaisa/JazzCash)";
-      }
-
-      document.getElementById('trans-modal').classList.remove('hidden');
-    }
-
-    function closeModal() { document.getElementById('trans-modal').classList.add('hidden'); }
-
-    function submitTransaction() {
-      const amt = parseInt(document.getElementById('trans-amount').value);
-      const acc = document.getElementById('trans-acc').value;
-      if (!amt || !acc) return notify('تمام خانے پر کریں');
-
-      const userKey = cleanUserKey(currentUser);
-
-      if (currentMode === 'withdraw') {
-        db.ref('users/' + userKey + '/balance').once('value', (snap) => {
-          let currentBal = snap.val() || 0;
-          if (amt > currentBal) {
-            return notify('آپ کے والٹ میں اتنی رقم موجود نہیں ہے!');
-          }
-
-          // Calculate 20% tax
-          const tax = Math.round(amt * 0.20);
-          const finalPayable = amt - tax;
-
-          const reqId = Date.now();
-          db.ref('requests/' + reqId).set({
-            id: reqId,
-            user: currentUser,
-            type: 'withdraw',
-            amountRequested: amt,
-            taxDeducted: tax,
-            finalAmount: finalPayable,
-            account: acc,
-            status: 'pending'
-          });
-
-          notify(`ودڈرا درخواست جمع ہو گئی!\nٹوٹل رقم: Rs ${amt}\nگیم چارجز (20%): Rs ${tax}\nآپ کو موصول ہوں گے: Rs ${finalPayable}`);
-          closeModal();
-        });
-      } else {
-        const reqId = Date.now();
-        db.ref('requests/' + reqId).set({
-          id: reqId,
-          user: currentUser,
-          type: 'deposit',
-          amount: amt,
-          account: acc,
-          status: 'pending'
-        });
-
-        notify('ڈیپازٹ درخواست بھیج دی گئی ہے! ایڈمن جلد منظور کرے گا۔');
-        closeModal();
-      }
-    }
-
-    function updateAnnouncement() {
-      const notice = document.getElementById('admin-notice-input').value.trim();
-      if (!notice) return notify('نوٹس کا متن درج کریں');
-
-      db.ref('announcement').set(notice);
-      notify('ایناونسمنٹ کامیابی سے اپڈیٹ ہو گئی ہے!');
-      document.getElementById('admin-notice-input').value = '';
-    }
-
-    function listenToAdminRequests() {
-      db.ref('requests').on('value', (snapshot) => {
-        const data = snapshot.val() || {};
-        const list = document.getElementById('requests-list');
-        let pending = [];
-
-        Object.keys(data).forEach(key => {
-          if (data[key].status === 'pending') pending.push(data[key]);
-        });
-
-        if (pending.length === 0) {
-          list.innerHTML = 'کوئی زیر التواء درخواست نہیں ہے';
-          return;
-        }
-
-        list.innerHTML = pending.map(r => {
-          if (r.type === 'withdraw') {
-            return `
-              <div class="req-item" style="border-color:#ff4d4d;">
-                <b>${r.user}</b> (ودڈرا درخواست)<br>
-                کل درخواست رقم: <b>Rs ${r.amountRequested}</b><br>
-                <span style="color:#28a745; font-weight:bold;">بھیجنے کی رقم (Net Pay): Rs ${r.finalAmount}</span><br>
-                <small style="color:#ff9999;">(20% ایڈمن ٹیکس: Rs ${r.taxDeducted})</small><br>
-                <small>نمبر: ${r.account}</small>
-                <div class="btn-group" style="margin-top:6px;">
-                  <button class="btn-gold" onclick="approveReq(${r.id})">منظور اور پے کریں</button>
-                  <button class="btn-outline" onclick="rejectReq(${r.id})">مسترد کریں</button>
+    <!-- Background Audio Component -->
+    <audio id="bgMusic" loop preload="auto">
+        <!-- High Quality Cyberpunk/Trading Style Heavy Track -->
+        <source src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_c8c8a73373.mp3" type="audio/mpeg">
+    </audio>
+
+    <!-- Header Section -->
+    <header class="header">
+        <div class="brand">
+            <div class="brand-icon">
+                <i class="fa-solid fa-chart-line"></i>
+            </div>
+            <div>
+                <div class="brand-title">TANIA TRADING</div>
+                <div class="brand-subtitle">PORTAL V2.0</div>
+            </div>
+        </div>
+        <button class="audio-control" onclick="toggleAudio()">
+            <i class="fa-solid fa-music" id="audioIcon"></i>
+            <span id="audioText">Music</span>
+        </button>
+    </header>
+
+    <div class="container">
+
+        <!-- Futuristic Notice Board -->
+        <div class="glass-card notice-board">
+            <div class="notice-header">
+                <div class="notice-title">
+                    <i class="fa-solid fa-microchip"></i> ADVANCED SYSTEM NOTICE
                 </div>
-              </div>
-            `;
-          } else {
-            return `
-              <div class="req-item">
-                <b>${r.user}</b> (ڈیپازٹ) - <b>Rs ${r.amount}</b><br>
-                <small>ڈیٹیل/نمبر: ${r.account}</small>
-                <div class="btn-group" style="margin-top:6px;">
-                  <button class="btn-gold" onclick="approveReq(${r.id})">منظور کریں</button>
-                  <button class="btn-outline" onclick="rejectReq(${r.id})">مسترد کریں</button>
+                <span class="live-badge">LIVE UPDATES</span>
+            </div>
+            <div class="notice-ticker">
+                🚀 Welcome to Tania Trading Portal. Market conditions are optimal today! Automatic payouts are enabled with 80% growth curve efficiency.
+            </div>
+        </div>
+
+        <!-- Profile Card -->
+        <div class="glass-card profile-card">
+            <div class="avatar-container">
+                <div class="avatar">
+                    <i class="fa-solid fa-user-astronaut"></i>
                 </div>
-              </div>
-            `;
-          }
-        }).join('');
-      });
-    }
+            </div>
+            <div class="user-info">
+                <h3>AWAIS SHAH <i class="fa-solid fa-circle-check"></i></h3>
+                <p><i class="fa-solid fa-shield-halved"></i> Trading Member | Upliner: Asifalli</p>
+            </div>
+        </div>
 
-    function approveReq(id) {
-      db.ref('requests/' + id).once('value', (snapshot) => {
-        const req = snapshot.val();
-        if (req && req.status === 'pending') {
-          const userKey = cleanUserKey(req.user);
-          db.ref('requests/' + id + '/status').set('approved');
+        <!-- Wallet Card -->
+        <div class="glass-card wallet-card">
+            <div class="wallet-label">Trading Wallet Balance</div>
+            <div class="balance"><span>PKR</span> 0.00</div>
+            <p style="font-size: 0.75rem; color: var(--primary-teal);">
+                <i class="fa-solid fa-rotate"></i> Auto Synced & Secure
+            </p>
+        </div>
 
-          db.ref('users/' + userKey + '/balance').transaction((current) => {
-            if (req.type === 'deposit') {
-              return (current || 0) + req.amount;
-            } else if (req.type === 'withdraw') {
-              return Math.max(0, (current || 0) - req.amountRequested);
+        <!-- Metrics Overview -->
+        <div class="metrics-grid">
+            <div class="glass-card metric-card invest">
+                <div class="metric-icon"><i class="fa-solid fa-wallet"></i></div>
+                <div class="metric-title">TOTAL INVESTMENT</div>
+                <div class="metric-value">Rs 970</div>
+            </div>
+            <div class="glass-card metric-card withdraw">
+                <div class="metric-icon"><i class="fa-solid fa-money-bill-transfer"></i></div>
+                <div class="metric-title">TOTAL WITHDRAWAL</div>
+                <div class="metric-value">Rs 774</div>
+            </div>
+        </div>
+
+        <!-- Quick Access Services -->
+        <div class="glass-card">
+            <div style="font-size: 0.8rem; margin-bottom: 12px; color: var(--text-sub); text-transform: uppercase;">
+                Quick Services Hub
+            </div>
+            <div class="services-grid">
+                <a href="#" class="service-btn">
+                    <i class="fa-solid fa-award"></i>
+                    <span>REWARDS</span>
+                </a>
+                <a href="#" class="service-btn">
+                    <i class="fa-solid fa-boxes-stacked"></i>
+                    <span>MY STOCKS</span>
+                </a>
+                <a href="#" class="service-btn">
+                    <i class="fa-solid fa-users"></i>
+                    <span>MY TEAM</span>
+                </a>
+                <a href="#" class="service-btn">
+                    <i class="fa-solid fa-file-invoice"></i>
+                    <span>W-LOG</span>
+                </a>
+                <a href="#" class="service-btn">
+                    <i class="fa-solid fa-receipt"></i>
+                    <span>D-LOG</span>
+                </a>
+                <a href="#" class="service-btn">
+                    <i class="fa-solid fa-list-check"></i>
+                    <span>ALL LOG</span>
+                </a>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Bottom Navigation -->
+    <nav class="bottom-nav">
+        <a href="#" class="nav-item active">
+            <i class="fa-solid fa-house"></i>
+            <span>Home</span>
+        </a>
+        <a href="#" class="nav-item">
+            <i class="fa-solid fa-arrow-down-long"></i>
+            <span>Deposit</span>
+        </a>
+        <a href="#" class="nav-item trade-btn">
+            <i class="fa-solid fa-bolt"></i>
+        </a>
+        <a href="#" class="nav-item">
+            <i class="fa-solid fa-arrow-up-long"></i>
+            <span>Withdraw</span>
+        </a>
+        <a href="#" class="nav-item">
+            <i class="fa-solid fa-power-off"></i>
+            <span>Exit</span>
+        </a>
+    </nav>
+
+    <!-- Audio Control Script -->
+    <script>
+        const audio = document.getElementById('bgMusic');
+        const icon = document.getElementById('audioIcon');
+        const text = document.getElementById('audioText');
+        let isPlaying = false;
+
+        function toggleAudio() {
+            if (isPlaying) {
+                audio.pause();
+                icon.className = 'fa-solid fa-music';
+                text.innerText = 'Music';
+            } else {
+                audio.play();
+                icon.className = 'fa-solid fa-pause';
+                text.innerText = 'Playing';
             }
-          });
-          notify('درخواست منظور کر لی گئی ہے!');
+            isPlaying = !isPlaying;
         }
-      });
-    }
 
-    function rejectReq(id) {
-      db.ref('requests/' + id + '/status').set('rejected');
-      notify('درخواست مسترد کر دی گئی ہے!');
-    }
-  </script>
+        // Auto play on first click anywhere on screen (Browser policy requirement)
+        document.body.addEventListener('click', function() {
+            if(!isPlaying) {
+                // audio.play(); // Optional: user interaction triggers play
+            }
+        }, { once: true });
+    </script>
 </body>
 </html>
