@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="ur" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Try Youth Group - Ultimate Game</title>
+    <!-- Google Fonts & FontAwesome -->
+    <link href="https://fonts.googleapis.com/css2?family=Jameel+Noori+Nastaleeq&family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-hover: #4f46e5;
+            --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #311042 100%);
+            --card-bg: rgba(255, 255, 255, 0.07);
+            --border-color: rgba(255, 255, 255, 0.15);
+            --text-color: #f8fafc;
+            --accent: #10b981;
+        }
+
+        [data-lang="en"] {
+            direction: ltr;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        [data-lang="ur"] {
+            direction: rtl;
+            font-family: 'Jameel Noori+Nastaleeq', 'Poppins', sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+        }
+
+        body {
+            background: var(--bg-gradient);
+            color: var(--text-color);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            padding: 15px;
+            overflow-x: hidden;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 480px;
+            background: var(--card-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--border-color);
+            border-radius: 24px;
+            padding: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+            margin-top: 10px;
+        }
+
+        .header-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 12px;
+        }
+
+        .logo-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #38bdf8;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .top-btns {
+            display: flex;
+            gap: 8px;
+        }
+
+        .icon-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid var(--border-color);
+            color: #fff;
+            padding: 8px 12px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: 0.3s;
+            font-size: 0.9rem;
+        }
+
+        .icon-btn:hover {
+            background: var(--primary);
+        }
+
+        .screen {
+            display: none;
+            animation: fadeIn 0.4s ease-in-out;
+        }
+
+        .screen.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.97); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .menu-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-top: 15px;
+        }
+
+        .menu-btn {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(16, 185, 129, 0.2));
+            border: 1px solid var(--border-color);
+            padding: 18px 12px;
+            border-radius: 16px;
+            color: white;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        .menu-btn i {
+            font-size: 1.6rem;
+            color: #38bdf8;
+        }
+
+        .menu-btn:hover {
+            background: var(--primary);
+            border-color: #38bdf8;
+            transform: translateY(-3px);
+        }
+
+        .menu-btn.full-width {
+            grid-column: span 2;
+        }
+
+        .game-stats {
+            display: flex;
+            justify-content: space-between;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 10px 15px;
+            border-radius: 12px;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+
+        /* How to play instruction box */
+        .instructions-box {
+            background: rgba(56, 189, 248, 0.1);
+            border: 1px solid rgba(56, 189, 248, 0.3);
+            padding: 10px 15px;
+            border-radius: 12px;
+            margin-bottom: 15px;
+            font-size: 0.9rem;
+            line-height: 1.5;
+            color: #e2e8f0;
+        }
+
+        .instructions-box h4 {
+            color: #38bdf8;
+            margin-bottom: 5px;
+            font-size: 0.95rem;
+        }
+
+        #game-board {
+            width: 100%;
+            height: 220px;
+            background: rgba(0, 0, 0, 0.4);
+            border: 2px dashed var(--border-color);
+            border-radius: 16px;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 10px;
+        }
+
+        .action-btn {
+            width: 100%;
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 15px;
+            transition: 0.3s;
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
+        }
+
+        .action-btn:hover {
+            background: var(--primary-hover);
+        }
+
+        .back-btn {
+            background: rgba(255, 255, 255, 0.1);
+            margin-top: 10px;
+        }
+        .back-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        input, select {
+            width: 100%;
+            padding: 12px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            color: white;
+            margin-bottom: 12px;
+            font-size: 0.95rem;
+        }
+
+        .market-list {
+            max-height: 250px;
+            overflow-y: auto;
+            margin-bottom: 10px;
+        }
+
+        .market-item {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-color);
+            padding: 10px;
+            border-radius: 10px;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+    </style>
+</head>
+<body data-lang="ur">
+
+    <div class="container">
+        <!-- Top Navigation Header -->
+        <div class="header-bar">
+            <div class="logo-title">
+                <i class="fa-solid fa-gamepad"></i> <span id="app-title">TYG گیم زون</span>
+            </div>
+            <div class="top-btns">
+                <button class="icon-btn" onclick="toggleLanguage()"><i class="fa-solid fa-globe"></i> <span id="lang-lbl">EN</span></button>
+                <button class="icon-btn" onclick="switchScreen('settings-screen')"><i class="fa-solid fa-gear"></i></button>
+            </div>
+        </div>
+
+        <!-- 1. HOME SCREEN -->
+        <div id="home-screen" class="screen active">
+            <h2 style="text-align: center; margin-bottom: 15px;" id="welcome-txt">خوش آمدید!</h2>
+            <div class="menu-grid">
+                <button class="menu-btn" onclick="switchScreen('game-screen')">
+                    <i class="fa-solid fa-play"></i>
+                    <span data-i18n="play_game">گیم کھیلیں</span>
+                </button>
+                <button class="menu-btn" onclick="switchScreen('market-screen')">
+                    <i class="fa-solid fa-store"></i>
+                    <span data-i18n="p2p_market">P2P مارکیٹ</span>
+                </button>
+                <button class="menu-btn" onclick="switchScreen('admin-screen')">
+                    <i class="fa-solid fa-shield-halved"></i>
+                    <span data-i18n="admin_panel">ایڈمن پینل</span>
+                </button>
+                <button class="menu-btn" onclick="switchScreen('leaderboard-screen')">
+                    <i class="fa-solid fa-trophy"></i>
+                    <span data-i18n="leaderboard">لیڈر بورڈ</span>
+                </button>
+                <button class="menu-btn full-width" onclick="switchScreen('profile-screen')">
+                    <i class="fa-solid fa-user-circle"></i>
+                    <span data-i18n="my_profile">میری پروفائل</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- 2. GAME SCREEN WITH INSTRUCTIONS -->
+        <div id="game-screen" class="screen">
+            <div class="game-stats">
+                <span><i class="fa-solid fa-coins" style="color: gold;"></i> سکور: <span id="score">0</span></span>
+                <span><i class="fa-solid fa-heart" style="color: red;"></i> لائف: <span id="lives">3</span></span>
+            </div>
+
+            <!-- How to Play Box Added Here -->
+            <div class="instructions-box">
+                <h4 id="inst-title"><i class="fa-solid fa-circle-info"></i> گیم کھیلنے کا طریقہ:</h4>
+                <p id="inst-desc">نیচে دیے گئے 'گیم شروع کریں' کے بٹن کو دبائیں۔ جیسے ہی ہدف اسکرین پر آئے اس پر کلک کریں تاکہ پوائنٹس مل سکیں۔ لائف ختم ہونے سے پہلے زیادہ سے زیادہ سکور بنائیں۔</p>
+            </div>
+
+            <div id="game-board">
+                <p style="color: #94a3b8;" id="game-msg">گیم شروع کرنے کے لیے نیچے بٹن دبائیں!</p>
+            </div>
+            
+            <button class="action-btn" onclick="startGame()" data-i18n="start_btn">گیم شروع کریں</button>
+            <button class="action-btn back-btn" onclick="switchScreen('home-screen')" data-i18n="back_btn">واپس جائیں</button>
+        </div>
+
+        <!-- 3. P2P MARKET SCREEN -->
+        <div id="market-screen" class="screen">
+            <h3 style="margin-bottom: 10px;" data-i18n="market_title">P2P مارکیٹ پلیس</h3>
+            <div class="market-list">
+                <div class="market-item">
+                    <span>آئٹم 1: پرو بوسٹر</span>
+                    <button class="icon-btn" style="padding: 4px 8px;">خریدیں</button>
+                </div>
+            </div>
+            <button class="action-btn" onclick="addNewMarketItem()" data-i18n="add_item">نئی چیز شامل کریں</button>
+            <button class="action-btn back-btn" onclick="switchScreen('home-screen')" data-i18n="back_btn">واپس جائیں</button>
+        </div>
+
+        <!-- 4. ADMIN PANEL SCREEN -->
+        <div id="admin-screen" class="screen">
+            <h3 style="margin-bottom: 10px;" data-i18n="admin_title">ایڈمن کنٹرول پینل</h3>
+            <input type="password" id="admin-pass" placeholder="ایڈمن پاس ورڈ درج کریں...">
+            <button class="action-btn" onclick="checkAdmin()" data-i18n="login_btn">لاگ ان کریں</button>
+            <div id="admin-controls" style="display: none; margin-top: 15px;">
+                <p style="color: var(--accent); margin-bottom: 10px;" data-i18n="admin_success">خوش آمدید ایڈمن!</p>
+                <button class="action-btn" style="background: #ef4444;" onclick="resetDatabase()" data-i18n="reset_db">ڈیٹا بیس ری سیٹ کریں</button>
+            </div>
+            <button class="action-btn back-btn" onclick="switchScreen('home-screen')" data-i18n="back_btn">واپس جائیں</button>
+        </div>
+
+        <!-- 5. LEADERBOARD SCREEN -->
+        <div id="leaderboard-screen" class="screen">
+            <h3 style="margin-bottom: 10px;" data-i18n="leaderboard">لیڈر بورڈ</h3>
+            <div class="market-list">
+                <div class="market-item"><span>1. اویس شاہ</span> <strong>5000 XP</strong></div>
+                <div class="market-item"><span>2. حسیب</span> <strong>4200 XP</strong></div>
+            </div>
+            <button class="action-btn back-btn" onclick="switchScreen('home-screen')" data-i18n="back_btn">واپس جائیں</button>
+        </div>
+
+        <!-- 6. PROFILE SCREEN -->
+        <div id="profile-screen" class="screen">
+            <h3 style="margin-bottom: 10px;" data-i18n="my_profile">میری پروفائل</h3>
+            <input type="text" id="user-name-input" value="Syed Awais Shah">
+            <button class="action-btn" onclick="saveProfile()" data-i18n="save_btn">محفوظ کریں</button>
+            <button class="action-btn back-btn" onclick="switchScreen('home-screen')" data-i18n="back_btn">واپس جائیں</button>
+        </div>
+
+        <!-- 7. SETTINGS SCREEN -->
+        <div id="settings-screen" class="screen">
+            <h3 style="margin-bottom: 10px;" data-i18n="settings_title">سیٹنگز</h3>
+            <p style="margin-bottom: 10px; font-size: 0.9rem;" data-i18n="settings_desc">یہاں سے آپ ایپ کی ترتیبات تبدیل کر سکتے ہیں۔</p>
+            <button class="action-btn back-btn" onclick="switchScreen('home-screen')" data-i18n="back_btn">واپس جائیں</button>
+        </div>
+    </div>
+
+    <!-- JavaScript Workings -->
+    <script>
+        const translations = {
+            ur: {
+                app_title: "TYG گیم زون",
+                welcome_txt: "خوش آمدید!",
+                play_game: "گیم کھیلیں",
+                p2p_market: "P2P مارکیٹ",
+                admin_panel: "ایڈمن پینل",
+                leaderboard: "لیڈر بورڈ",
+                my_profile: "میری پروفائل",
+                start_btn: "گیم شروع کریں",
+                back_btn: "واپس جائیں",
+                market_title: "P2P مارکیٹ پلیس",
+                add_item: "نئی چیز شامل کریں",
+                admin_title: "ایڈمن کنٹرول پینل",
+                login_btn: "لاگ ان کریں",
+                admin_success: "کامیاب! آپ ایڈمن پینل میں ہیں۔",
+                reset_db: "ڈیٹا بیس ری سیٹ کریں",
+                save_btn: "محفوظ کریں",
+                settings_title: "سیٹنگز",
+                settings_desc: "یہاں سے آپ ایپ کی ترتیبات تبدیل کر سکتے ہیں۔",
+                game_msg: "گیم شروع کرنے کے لیے نیچے بٹن دبائیں!",
+                inst_title: "گیم کھیلنے کا طریقہ:",
+                inst_desc: "نیচে دیے گئے 'گیم شروع کریں' کے بٹن کو دبائیں۔ جیسے ہی ہدف اسکرین پر آئے اس پر کلک کریں تاکہ پوائنٹس مل سکیں۔ لائف ختم ہونے سے پہلے زیادہ سے زیادہ سکور بنائیں۔"
+            },
+            en: {
+                app_title: "TYG Game Zone",
+                welcome_txt: "Welcome!",
+                play_game: "Play Game",
+                p2p_market: "P2P Market",
+                admin_panel: "Admin Panel",
+                leaderboard: "Leaderboard",
+                my_profile: "My Profile",
+                start_btn: "Start Game",
+                back_btn: "Go Back",
+                market_title: "P2P Marketplace",
+                add_item: "Add New Item",
+                admin_title: "Admin Control Panel",
+                login_btn: "Login",
+                admin_success: "Success! You are logged in as admin.",
+                reset_db: "Reset Database",
+                save_btn: "Save Changes",
+                settings_title: "Settings",
+                settings_desc: "Manage your app preferences here.",
+                game_msg: "Press the start button below to play!",
+                inst_title: "How to Play:",
+                inst_desc: "Press the 'Start Game' button below. Click the targets as they appear on the screen to score points. Make the highest score before running out of lives."
+            }
+        };
+
+        let currentLang = 'ur';
+
+        function switchScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(screen => {
+                screen.classList.remove('active');
+            });
+            document.getElementById(screenId).classList.add('active');
+        }
+
+        function toggleLanguage() {
+            currentLang = currentLang === 'ur' ? 'en' : 'ur';
+            document.body.setAttribute('data-lang', currentLang);
+            document.getElementById('lang-lbl').innerText = currentLang === 'ur' ? 'EN' : 'اردو';
+
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (translations[currentLang][key]) {
+                    el.innerText = translations[currentLang][key];
+                }
+            });
+
+            document.getElementById('app-title').innerText = translations[currentLang]['app_title'];
+            document.getElementById('game-msg').innerText = translations[currentLang]['game_msg'];
+            document.getElementById('inst-title').innerHTML = `<i class="fa-solid fa-circle-info"></i> ` + translations[currentLang]['inst_title'];
+            document.getElementById('inst-desc').innerText = translations[currentLang]['inst_desc'];
+        }
+
+        function startGame() {
+            document.getElementById('game-msg').innerText = currentLang === 'ur' ? 'گیم جاری ہے... اسکور بڑھ رہا ہے!' : 'Game active... Scoring points!';
+            let scoreElem = document.getElementById('score');
+            scoreElem.innerText = parseInt(scoreElem.innerText) + 10;
+        }
+
+        function checkAdmin() {
+            const pass = document.getElementById('admin-pass').value;
+            if(pass === "1234") {
+                document.getElementById('admin-controls').style.display = 'block';
+                alert(currentLang === 'ur' ? 'لاگ ان کامیاب!' : 'Login Successful!');
+            } else {
+                alert(currentLang === 'ur' ? 'غلط پاس ورڈ!' : 'Wrong Password!');
+            }
+        }
+
+        function resetDatabase() {
+            if(confirm(currentLang === 'ur' ? 'کیا آپ واقعی ڈیٹا ری سیٹ کرنا چاہتے ہیں؟' : 'Are you sure to reset database?')) {
+                alert(currentLang === 'ur' ? 'ڈیٹا ری سیٹ ہو گیا!' : 'Database Reset Successful!');
+            }
+        }
+
+        function saveProfile() {
+            alert(currentLang === 'ur' ? 'پروفائل محفوظ ہو گئی!' : 'Profile Saved Successfully!');
+        }
+
+        function addNewMarketItem() {
+            alert(currentLang === 'ur' ? 'نئی پروڈکٹ مارکیٹ میں جوڑ دی گئی!' : 'New item added to market!');
+        }
+    </script>
+</body>
+</html>
