@@ -1297,11 +1297,9 @@ body::after {
       hasCompletedTutorial = true;
       
       if (isWin) {
-        db.ref('users/' + userKey + '/balance').once('value', (snap) => {
-          let currentBal = snap.val() || 0;
-          db.ref('users/' + userKey + '/balance').set(currentBal + 20);
-        });
-        notify('شاباش! آپ جیت گئے ہیں اور آپ کو انعام میں 20 پلس پوائنٹس مل گئے ہیں! 🎉');
+        notify('شاباش! آپ نے اپنی Free Training Game مکمل کر لی! 🎉 اب Online Match کے لیے دوسرے Player سے Connect ہوں۔');
+      } else {
+        notify('Training Game مکمل ہو گئی۔ اب Online Match کے لیے دوسرے Player سے Connect ہوں۔');
       } else {
         notify('ٹریننگ مکمل ہو گئی۔ اگલી بار جیت کر پوائنٹس حاصل کریں!');
       }
@@ -1318,7 +1316,133 @@ body::after {
 
     function startMatchFlow() {
       if (!isAudioPlaying) toggleAudio();
-      startBotTutorial();
+
+      // پہلی بار صرف Free Training Game
+      if (!hasCompletedTutorial) {
+        startBotTutorial();
+        return;
+      }
+
+      // Training کے بعد Online Match
+      findOnlineOpponent();
+    }
+
+    function findOnlineOpponent() {
+      const userKey = currentUser.replace(/[.#$\\[\\]]/g, "_");
+
+      // پہلے سے کسی Match میں ہو تو دوبارہ نہ لگے
+      if (isGameActive) return;
+
+      notify('⏳ Online Player تلاش کیا جا رہا ہے...\\nجب دوسرا Player Connect ہوگا تو Match شروع ہوگا۔');
+
+      const waitingRef = db.ref('matchmaking/waiting');
+
+      waitingRef.transaction((waiting) => {
+        // کوئی Player انتظار نہیں کر رہا
+        if (!waiting) {
+          return {
+            userKey: userKey,
+            username: currentUser,
+            time: firebase.database.ServerValue.TIMESTAMP
+          };
+        }
+
+        // خود سے Match نہ بنے
+        if (waiting.userKey === userKey) {
+          return;
+        }
+
+        // دوسرا Player مل گیا
+        return null;
+
+      }, (error, committed, snapshot) => {
+
+        if (error) {
+          notify('Online Match بنانے میں مسئلہ آیا۔ دوبارہ کوشش کریں۔');
+          return;
+        }
+
+        if (!committed) return;
+
+        const opponent = snapshot.val();
+
+        // اگر transaction میں opponent ملا
+        if (opponent && opponent.userKey !== userKey) {
+          createOnlineMatch(userKey, currentUser, opponent);
+        } else {
+          // ہم waiting Player ہیں
+          listenForOnlineMatch(userKey);
+        }
+      });
+    }
+
+    function listenForOnlineMatch(userKey) {
+      db.ref('matches').orderByChild('player2Key').equalTo(userKey).limitToFirst(1)
+        .on('value', (snap) => {
+          if (!snap.exists()) return;
+
+          snap.forEach((child) => {
+            const match = child.val();
+
+            if (match && match.player1Key) {
+              startOnlineGame(match, 'player2');
+            }
+          });
+        });
+    }
+
+    function createOnlineMatch(userKey, username, opponent) {
+      const matchId = 'match_' + Date.now() + '_' + Math.floor(Math.random() * 10000);
+
+      const matchData = {
+        matchId: matchId,
+        player1Key: opponent.userKey,
+        player1Name: opponent.username,
+        player2Key: userKey,
+        player2Name: username,
+        status: 'waiting',
+        createdAt: firebase.database.ServerValue.TIMESTAMP
+      };
+
+      db.ref('matches/' + matchId).set(matchData).then(() => {
+        startOnlineGame(matchData, 'player2');
+      }).catch(() => {
+        notify('Match بنانے میں مسئلہ آیا۔ دوبارہ کوشش کریں۔');
+      });
+    }
+
+    function startOnlineGame(match, role) {
+      isBotTutorial = false;
+      isGameActive = true;
+
+      myColor = role === 'player1' ? 'blue' : 'red';
+
+      document.getElementById('lock-overlay').classList.add('hidden');
+      document.getElementById('versus-container').classList.remove('hidden');
+
+      if (role === 'player1') {
+        document.getElementById('player-red-title').innerText =
+          match.player2Name + ' (Player 2)';
+        document.getElementById('player-blue-title').innerText =
+          match.player1Name + ' (You)';
+      } else {
+        document.getElementById('player-red-title').innerText =
+          match.player2Name + ' (You)';
+        document.getElementById('player-blue-title').innerText =
+          match.player1Name + ' (Player 1)';
+      }
+
+      document.getElementById('game-status').innerText =
+        '🎮 Opponent Connected! Match شروع ہونے والا ہے...';
+
+      initDefaultBoard();
+
+      setTimeout(() => {
+        document.getElementById('game-status').innerText =
+          myColor === 'red'
+            ? dict[currentLang].yourTurn
+            : 'Opponent کی باری...';
+      }, 1000);
     }
 
     function startBotTutorial() {
